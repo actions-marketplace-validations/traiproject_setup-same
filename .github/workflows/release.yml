@@ -121,8 +121,8 @@ jobs:
                 force: true
               });
             } catch (e) {
-              // If tag doesn't exist, create it
-              if (e.status === 404) {
+              // If tag doesn't exist (404 or 422), create it
+              if (e.status === 404 || (e.status === 422 && e.message?.includes('Reference does not exist'))) {
                 await github.rest.git.createRef({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
