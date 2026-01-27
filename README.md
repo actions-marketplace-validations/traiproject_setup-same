@@ -1,7 +1,7 @@
 # setup-same
 
 ![](https://img.shields.io/github/actions/workflow/status/traiproject/setup-same/test.yml)
-![](https://img.shields.io/github/v/release/traiproject/setup-same)
+![](https://img.shields.io/github/release/traiproject/setup-same)
 
 Set up your GitHub Actions workflow with the
 [same CLI tool](https://github.com/traiproject/same).
