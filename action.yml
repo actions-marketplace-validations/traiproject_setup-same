@@ -1,0 +1,27 @@
+name: 'setup-same'
+description: 'Setup the same CLI tool for GitHub Actions'
+author: 'Traiproject'
+
+inputs:
+  version:
+    description: 'Version of same to install'
+    required: false
+    default: 'latest'
+  github-token:
+    description: 'Token for API requests to GitHub'
+    required: false
+    default: '${{ github.token }}'
+
+outputs:
+  version:
+    description: 'The installed version of same'
+  cache-hit:
+    description: 'Boolean indicating if the binary was cached'
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'download'
+  color: 'blue'
