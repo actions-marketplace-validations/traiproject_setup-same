@@ -22,7 +22,9 @@ async function run(): Promise<void> {
       await exec.exec('same', ['--version']);
       core.info('Successfully verified same installation');
     } catch (error) {
-      core.warning(`Failed to verify same installation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      core.warning(
+        `Failed to verify same installation: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     core.setOutput('version', version);

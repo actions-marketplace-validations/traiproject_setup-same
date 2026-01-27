@@ -5,7 +5,7 @@ export interface PlatformInfo {
 
 export function getPlatformInfo(): PlatformInfo {
   let os: 'linux' | 'macOS';
-  
+
   switch (process.platform) {
     case 'linux':
       os = 'linux';
@@ -20,7 +20,7 @@ export function getPlatformInfo(): PlatformInfo {
   }
 
   let arch: 'x86_64' | 'arm64';
-  
+
   switch (process.arch) {
     case 'x64':
       arch = 'x86_64';
