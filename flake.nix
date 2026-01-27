@@ -24,12 +24,12 @@
 
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
-              nodejs-slim
+            nodejs_24
 
-              nixfmt-tree
-              nixfmt-rfc-style
-              nixd
-            ];
+            nixfmt-tree
+            nixfmt-rfc-style
+            nixd
+          ];
         };
 
         # `nix fmt` will use this
@@ -37,4 +37,3 @@
       }
     );
 }
-
