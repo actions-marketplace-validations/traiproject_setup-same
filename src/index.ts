@@ -1,18 +1,32 @@
 import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import { getPlatformInfo } from './platform';
+import { resolveVersion } from './version';
+import { installSame } from './install';
 
 async function run(): Promise<void> {
   try {
-    core.info('Hello World');
-
-    const version = core.getInput('version') || 'latest';
+    const versionInput = core.getInput('version') || 'latest';
     const githubToken = core.getInput('github-token') || process.env.GITHUB_TOKEN || '';
 
-    core.info(`Version requested: ${version}`);
-    core.info(`GitHub token provided: ${githubToken ? 'yes' : 'no'}`);
+    const platformInfo = getPlatformInfo();
+    core.info(`Platform: ${platformInfo.os}/${platformInfo.arch}`);
 
-    // Placeholder outputs
+    const version = await resolveVersion(versionInput, githubToken);
+    core.info(`Resolved version: ${version}`);
+
+    const { cachedPath, cacheHit } = await installSame(version, platformInfo);
+    core.info(`Installation completed at ${cachedPath}`);
+
+    try {
+      await exec.exec('same', ['--version']);
+      core.info('Successfully verified same installation');
+    } catch (error) {
+      core.warning(`Failed to verify same installation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
     core.setOutput('version', version);
-    core.setOutput('cache-hit', 'false');
+    core.setOutput('cache-hit', cacheHit.toString());
 
     core.info('setup-same action completed successfully');
   } catch (error) {

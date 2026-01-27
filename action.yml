@@ -23,5 +23,5 @@ runs:
   main: 'dist/index.js'
 
 branding:
-  icon: 'download'
-  color: 'blue'
+  icon: 'terminal'
+  color: 'purple'

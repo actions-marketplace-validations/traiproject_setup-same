@@ -1,0 +1,78 @@
+name: Test Action
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        version: [latest, v0.0.1, 0.0.1]
+        include:
+          - os: macos-14
+            version: latest
+          - os: macos-14  
+            version: v0.0.1
+          - os: macos-14
+            version: 0.0.1
+            
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build action
+        run: npm run build
+
+      - name: Run action with version ${{ matrix.version }}
+        id: run-action
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify same installation
+        run: |
+          which same
+          same --version
+
+      - name: Check version output
+        run: |
+          VERSION_OUTPUT=$(same --version)
+          echo "same version output: $VERSION_OUTPUT"
+          
+          EXPECTED_VERSION="${{ matrix.version }}"
+          if [[ "${{ matrix.version }}" == "latest" ]]; then
+            echo "✅ Successfully installed latest version"
+          else
+            # Remove 'v' prefix from expected version for comparison
+            EXPECTED_VERSION=${EXPECTED_VERSION#v}
+            if [[ "$VERSION_OUTPUT" == *"$EXPECTED_VERSION"* ]]; then
+              echo "✅ Version matches expected: $EXPECTED_VERSION"
+            else
+              echo "❌ Version mismatch. Expected to contain: $EXPECTED_VERSION"
+              echo "Actual output: $VERSION_OUTPUT"
+              exit 1
+            fi
+          fi
+
+      - name: Show cache status
+        run: |
+          echo "Cache hit: ${{ steps.run-action.outputs.cache-hit }}"
+          echo "Installed version: ${{ steps.run-action.outputs.version }}"
