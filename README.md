@@ -3,9 +3,12 @@
 ![](https://img.shields.io/github/actions/workflow/status/traiproject/setup-same/test.yml)
 ![](https://img.shields.io/github/v/release/traiproject/setup-same)
 
-Set up your GitHub Actions workflow with the [same CLI tool](https://github.com/traiproject/same).
+Set up your GitHub Actions workflow with the
+[same CLI tool](https://github.com/traiproject/same).
 
-This action downloads and installs the `same` binary from GitHub releases, caches it for improved performance, and makes it available in your workflow's PATH.
+This action downloads and installs the `same` binary from GitHub releases,
+caches it for improved performance, and makes it available in your workflow's
+PATH.
 
 ## Usage
 
@@ -26,15 +29,15 @@ Install the latest version of same with minimal configuration:
 Install a specific version of same (with or without the 'v' prefix):
 
 ```yaml
-- name: Setup same v0.0.1
+- name: Setup same v0.1.0
   uses: traiproject/setup-same@v1
   with:
-    version: 'v0.0.1'
+    version: "v0.1.0"
 
-- name: Setup same 0.0.1
+- name: Setup same 0.1.0
   uses: traiproject/setup-same@v1
   with:
-    version: '0.0.1'
+    version: "0.1.0"
 ```
 
 ### Using a Custom GitHub Token
@@ -45,22 +48,22 @@ For private repositories or to avoid rate limits:
 - name: Setup same with custom token
   uses: traiproject/setup-same@v1
   with:
-    version: 'latest'
+    version: "latest"
     github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 ```
 
 ## Inputs
 
-| Input | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `version` | Version of same to install (`latest` or version tag like `v1.0.0`) | No | `latest` |
-| `github-token` | GitHub token for API requests | No | `${{ github.token }}` |
+| Input          | Description                                                        | Required | Default               |
+| -------------- | ------------------------------------------------------------------ | -------- | --------------------- |
+| `version`      | Version of same to install (`latest` or version tag like `v1.0.0`) | No       | `latest`              |
+| `github-token` | GitHub token for API requests                                      | No       | `${{ github.token }}` |
 
 ## Outputs
 
-| Output | Description |
-|--------|-------------|
-| `version` | The installed version of same |
+| Output      | Description                                               |
+| ----------- | --------------------------------------------------------- |
+| `version`   | The installed version of same                             |
 | `cache-hit` | Boolean indicating if the binary was retrieved from cache |
 
 ##Platform Support
@@ -73,7 +76,8 @@ Supported architectures: `x86_64`, `arm64`
 
 ## Caching
 
-This action caches the downloaded binary between workflow runs to improve performance. The cache key is based on the OS, architecture, and version.
+This action caches the downloaded binary between workflow runs to improve
+performance. The cache key is based on the OS, architecture, and version.
 
 ## License
 
