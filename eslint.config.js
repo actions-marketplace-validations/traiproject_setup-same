@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
+import globals from 'globals';
 
 export default [
   eslint.configs.recommended,
@@ -11,9 +12,9 @@ export default [
       ecmaVersion: 2020,
       sourceType: 'module',
       globals: {
-        node: true,
-        es2020: true,
-        jest: true,
+        ...globals.node,
+        ...globals.es2020,
+        ...globals.jest,
       },
     },
     plugins: {

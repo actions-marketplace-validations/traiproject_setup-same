@@ -1,6 +1,7 @@
 {
   "name": "setup-same",
   "version": "1.0.0",
+  "type": "module",
   "description": "GitHub Action to setup the same CLI tool",
   "main": "dist/index.js",
   "scripts": {
