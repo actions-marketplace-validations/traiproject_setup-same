@@ -14,8 +14,7 @@ lib/
 *.tsbuildinfo
 
 # Build artifacts
-dist/*.map
-dist/*.txt
+dist
 
 # Runtime data
 pids
