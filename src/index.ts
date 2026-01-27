@@ -15,7 +15,7 @@ async function run(): Promise<void> {
     const version = await resolveVersion(versionInput, githubToken);
     core.info(`Resolved version: ${version}`);
 
-    const { cachedPath, cacheHit } = await installSame(version, platformInfo);
+    const { cachedPath, cacheHit } = await installSame(version, platformInfo, githubToken);
     core.info(`Installation completed at ${cachedPath}`);
 
     try {

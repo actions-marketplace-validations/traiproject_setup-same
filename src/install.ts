@@ -9,7 +9,8 @@ export interface InstallResult {
 
 export async function installSame(
   version: string,
-  platformInfo: PlatformInfo
+  platformInfo: PlatformInfo,
+  githubToken?: string
 ): Promise<InstallResult> {
   const { os, arch } = platformInfo;
 
@@ -26,7 +27,8 @@ export async function installSame(
   const downloadUrl = `https://github.com/traiproject/same/releases/download/v${version}/same_${version}_${os}_${arch}.tar.gz`;
   core.info(`Download URL: ${downloadUrl}`);
 
-  const downloadPath = await tc.downloadTool(downloadUrl);
+  const authHeader = githubToken ? `token ${githubToken}` : '';
+  const downloadPath = await tc.downloadTool(downloadUrl, '', authHeader);
   core.info(`Downloaded to ${downloadPath}`);
 
   const extractPath = await tc.extractTar(downloadPath);
