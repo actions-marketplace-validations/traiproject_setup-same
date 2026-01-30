@@ -5,7 +5,35 @@ import { installSame, InstallResult } from '../src/install';
 
 jest.mock('@actions/tool-cache');
 jest.mock('@actions/core');
-jest.mock('fs');
+jest.mock('fs', () => ({
+  statSync: jest.fn(),
+  existsSync: jest.fn(),
+  chmodSync: jest.fn(),
+  promises: {
+    access: jest.fn(),
+    readFile: jest.fn(),
+    writeFile: jest.fn(),
+    readdir: jest.fn(),
+    stat: jest.fn(),
+  },
+  constants: {
+    O_RDONLY: 0,
+    O_WRONLY: 1,
+    O_RDWR: 2,
+    S_IFMT: 61440,
+    S_IFREG: 32768,
+    S_IFDIR: 16384,
+    S_IFCHR: 8192,
+    S_IFBLK: 6144,
+    S_IFIFO: 4096,
+    S_IFLNK: 40960,
+    S_IFSOCK: 49152,
+    F_OK: 0,
+    R_OK: 4,
+    W_OK: 2,
+    X_OK: 1,
+  },
+}));
 
 const mockedTc = tc as jest.Mocked<typeof tc>;
 const mockedCore = core as jest.Mocked<typeof core>;
@@ -122,6 +150,7 @@ describe('installSame', () => {
     expect(mockedCore.info).toHaveBeenCalledWith(
       'Downloading same 1.0.0 for linux/x86_64 from GitHub releases'
     );
+    expect(mockedCore.info).toHaveBeenCalledWith('Download attempt 1/3');
     expect(mockedCore.info).toHaveBeenCalledWith(expect.stringContaining('Downloaded to'));
     expect(mockedCore.info).toHaveBeenCalledWith(
       expect.stringContaining('Downloaded file size')
@@ -175,13 +204,19 @@ describe('installSame', () => {
     Object.defineProperty(process, 'platform', { value: originalPlatform });
   });
 
-  it('should handle download failure', async () => {
+  it('should handle download failure with retries', async () => {
     mockedTc.downloadTool.mockRejectedValue(new Error('Network error'));
 
     const platformInfo = { os: 'linux' as const, arch: 'x86_64' as const };
     
     await expect(installSame('1.0.0', platformInfo, 'test-token')).rejects.toThrow('Network error');
-  });
+    
+    expect(mockedTc.downloadTool).toHaveBeenCalledTimes(3);
+    expect(mockedCore.info).toHaveBeenCalledWith('Download attempt 1/3');
+    expect(mockedCore.info).toHaveBeenCalledWith('Download attempt 2/3');
+    expect(mockedCore.info).toHaveBeenCalledWith('Download attempt 3/3');
+    expect(mockedCore.warning).toHaveBeenCalledTimes(2);
+  }, 30000);
 
   it('should handle extraction failure', async () => {
     mockedTc.downloadTool.mockResolvedValue('/tmp/download.tar.gz');

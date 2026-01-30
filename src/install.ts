@@ -10,11 +10,7 @@ export interface InstallResult {
   cacheHit: boolean;
 }
 
-async function downloadWithRetry(
-  url: string,
-  authHeader: string,
-  maxRetries = 3
-): Promise<string> {
+async function downloadWithRetry(url: string, authHeader: string, maxRetries = 3): Promise<string> {
   let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -26,7 +22,7 @@ async function downloadWithRetry(
       if (attempt < maxRetries) {
         const delay = Math.pow(2, attempt) * 1000;
         core.warning(`Download failed, retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }

@@ -57,8 +57,13 @@ export async function resolveVersion(version: string, token: string): Promise<st
     const rateLimitRemaining = response.message.headers['x-ratelimit-remaining'];
     const rateLimitReset = response.message.headers['x-ratelimit-reset'];
 
-    if (rateLimitRemaining === '0') {
-      const resetDate = new Date(parseInt(rateLimitReset || '0') * 1000);
+    const remaining = Array.isArray(rateLimitRemaining)
+      ? rateLimitRemaining[0]
+      : rateLimitRemaining;
+    const reset = Array.isArray(rateLimitReset) ? rateLimitReset[0] : rateLimitReset;
+
+    if (remaining === '0') {
+      const resetDate = new Date(parseInt(reset || '0') * 1000);
       throw new Error(
         `GitHub API rate limit exceeded. Limit resets at ${resetDate.toISOString()}. ` +
           `Consider providing a github-token input to increase rate limits.`
