@@ -19,8 +19,25 @@ async function run(): Promise<void> {
     core.info(`Installation completed at ${cachedPath}`);
 
     try {
-      await exec.exec('same', ['--version']);
-      core.info('Successfully verified same installation');
+      let versionOutput = '';
+      const exitCode = await exec.exec('same', ['--version'], {
+        listeners: {
+          stdout: (data: Buffer) => {
+            versionOutput += data.toString();
+          },
+        },
+      });
+
+      if (exitCode === 0) {
+        const trimmedOutput = versionOutput.trim();
+        core.info(`Successfully verified same installation: ${trimmedOutput}`);
+
+        if (version !== 'latest' && !trimmedOutput.includes(version)) {
+          core.warning(
+            `Installed version output "${trimmedOutput}" doesn't contain expected version "${version}"`
+          );
+        }
+      }
     } catch (error) {
       core.warning(
         `Failed to verify same installation: ${error instanceof Error ? error.message : 'Unknown error'}`

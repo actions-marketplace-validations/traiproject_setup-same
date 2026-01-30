@@ -1,12 +1,15 @@
 import * as tc from '@actions/tool-cache';
 import * as core from '@actions/core';
+import * as fs from 'fs';
 import { installSame, InstallResult } from '../src/install';
 
 jest.mock('@actions/tool-cache');
 jest.mock('@actions/core');
+jest.mock('fs');
 
 const mockedTc = tc as jest.Mocked<typeof tc>;
 const mockedCore = core as jest.Mocked<typeof core>;
+const mockedFs = fs as jest.Mocked<typeof fs>;
 
 describe('installSame', () => {
   beforeEach(() => {
@@ -15,6 +18,9 @@ describe('installSame', () => {
     mockedTc.downloadTool.mockResolvedValue('/tmp/download.tar.gz');
     mockedTc.extractTar.mockResolvedValue('/tmp/extracted');
     mockedTc.cacheDir.mockResolvedValue('/tmp/cached');
+    mockedFs.statSync.mockReturnValue({ size: 1024 } as fs.Stats);
+    mockedFs.existsSync.mockReturnValue(true);
+    mockedFs.chmodSync.mockReturnValue(undefined);
   });
 
   it('should construct correct URL for Linux x86_64', async () => {
@@ -114,20 +120,59 @@ describe('installSame', () => {
     await installSame('1.0.0', platformInfo, 'test-token');
 
     expect(mockedCore.info).toHaveBeenCalledWith(
-      'Downloading same 1.0.0 for linux/x86_64'
+      'Downloading same 1.0.0 for linux/x86_64 from GitHub releases'
     );
+    expect(mockedCore.info).toHaveBeenCalledWith(expect.stringContaining('Downloaded to'));
     expect(mockedCore.info).toHaveBeenCalledWith(
-      expect.stringContaining('Download URL')
+      expect.stringContaining('Downloaded file size')
     );
-    expect(mockedCore.info).toHaveBeenCalledWith(
-      expect.stringContaining('Downloaded to')
+    expect(mockedCore.info).toHaveBeenCalledWith(expect.stringContaining('Extracted to'));
+    expect(mockedCore.info).toHaveBeenCalledWith(expect.stringContaining('Cached to'));
+    expect(mockedCore.info).toHaveBeenCalledWith('Set binary as executable');
+  });
+
+  it('should throw error when downloaded file is empty', async () => {
+    mockedFs.statSync.mockReturnValue({ size: 0 } as fs.Stats);
+
+    const platformInfo = { os: 'linux' as const, arch: 'x86_64' as const };
+
+    await expect(installSame('1.0.0', platformInfo, 'test-token')).rejects.toThrow(
+      'Downloaded file is empty'
     );
-    expect(mockedCore.info).toHaveBeenCalledWith(
-      expect.stringContaining('Extracted to')
+  });
+
+  it('should throw error when binary is not found after extraction', async () => {
+    mockedFs.existsSync.mockReturnValue(false);
+
+    const platformInfo = { os: 'linux' as const, arch: 'x86_64' as const };
+
+    await expect(installSame('1.0.0', platformInfo, 'test-token')).rejects.toThrow(
+      'Binary not found at'
     );
-    expect(mockedCore.info).toHaveBeenCalledWith(
-      expect.stringContaining('Cached to')
-    );
+  });
+
+  it('should set binary as executable on Unix systems', async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+
+    const platformInfo = { os: 'linux' as const, arch: 'x86_64' as const };
+    await installSame('1.0.0', platformInfo, 'test-token');
+
+    expect(mockedFs.chmodSync).toHaveBeenCalledWith('/tmp/cached/same', 0o755);
+
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  });
+
+  it('should not set chmod on Windows', async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+
+    const platformInfo = { os: 'linux' as const, arch: 'x86_64' as const };
+    await installSame('1.0.0', platformInfo, 'test-token');
+
+    expect(mockedFs.chmodSync).not.toHaveBeenCalled();
+
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
   });
 
   it('should handle download failure', async () => {
